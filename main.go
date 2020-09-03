@@ -30,9 +30,9 @@ order by
 `
 
 type TargetedTaskUpdate struct {
-	source_id  string
-	source_uid string
-	params     []map[string]string
+	SourceId  string                 `json:"source_id"`
+	SourceUid string                 `json:"source_uid"`
+	Params    map[string]interface{} `json:"params"`
 }
 
 func main() {
@@ -59,22 +59,28 @@ func main() {
 	var task_id, source_id int
 	var target_source_ref, forwardable_headers, source_uid string
 	for rows.Next() {
-		params := make(map[string]string)
+		// scan the values from the row into our vars
 		rows.Scan(&task_id, &source_id, &target_source_ref, &forwardable_headers, &source_uid)
+
+		// make the params hash
+		params := make(map[string]interface{})
 		params["task_id"] = strconv.Itoa(task_id)
 		params["source_ref"] = target_source_ref
 		params["request_context"] = forwardable_headers
-
 		fmt.Fprintf(os.Stdout, "params: %s\n", params)
 
-		t := TargetedTaskUpdate{strconv.Itoa(source_id), source_uid, []map[string]string{params}}
-		fmt.Println(t.source_uid)
+		// Create the struct to marshal into JSON
+		t := TargetedTaskUpdate{strconv.Itoa(source_id), source_uid, params}
 		msg, err := json.Marshal(t)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error marshaling json: %v\n", err)
 		}
 
+		// TODO: remove, this is just validating the msg/struct marshaling
 		fmt.Fprintf(os.Stdout, "json source: %s\n", msg)
+		var tu TargetedTaskUpdate
+		err = json.Unmarshal(msg, &tu)
+		fmt.Fprintf(os.Stdout, "struct unmarshaled: %s\n", tu)
 	}
 	if rows.Err() != nil {
 		fmt.Fprintf(os.Stderr, "Error handling running task: %v\n", rows.Err())
