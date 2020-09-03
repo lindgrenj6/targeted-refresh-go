@@ -53,8 +53,8 @@ func main() {
 	}
 	defer rows.Close()
 
-	kafka := kafka.Producer()
-	defer kafka.Close()
+	producer := kafka.Producer()
+	defer producer.Close()
 
 	var task_id, source_id int
 	var target_source_ref, forwardable_headers, source_uid string
@@ -76,14 +76,12 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Error marshaling json: %v\n", err)
 		}
 
-		// TODO: remove, this is just validating the msg/struct marshaling
-		fmt.Fprintf(os.Stdout, "json source: %s\n", msg)
-		var tu TargetedTaskUpdate
-		err = json.Unmarshal(msg, &tu)
-		fmt.Fprintf(os.Stdout, "struct unmarshaled: %s\n", tu)
+		// Write the message out to kafka
+		producer.WriteMessages(context.TODO(), kafka.Message("ServiceInstance.Refresh", string(msg)))
 	}
+
 	if rows.Err() != nil {
-		fmt.Fprintf(os.Stderr, "Error handling running task: %v\n", rows.Err())
+		fmt.Fprintf(os.Stderr, "Error handling running tasks: %v\n", rows.Err())
 		os.Exit(1)
 	}
 

@@ -9,3 +9,10 @@ func Producer() *kafka.Writer {
 		Balancer: &kafka.LeastBytes{},
 	})
 }
+
+func Message(key, value string) kafka.Message {
+	return kafka.Message{
+		Key:   []byte(key),
+		Value: []byte(value),
+	}
+}
