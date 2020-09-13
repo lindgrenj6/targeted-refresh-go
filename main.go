@@ -13,7 +13,7 @@ import (
 
 var query string = `
 select
-tasks.id,
+	tasks.id,
 	tasks.source_id,
 	tasks.target_source_ref,
 	tasks.forwardable_headers,
