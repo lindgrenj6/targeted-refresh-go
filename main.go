@@ -77,7 +77,7 @@ func main() {
 		}
 
 		// Write the message out to kafka
-		producer.WriteMessages(context.TODO(), kafka.Message("ServiceInstance.Refresh", string(msg)))
+		producer.WriteMessages(context.Background(), kafka.Message("ServiceInstance.Refresh", string(msg)))
 	}
 
 	if rows.Err() != nil {
